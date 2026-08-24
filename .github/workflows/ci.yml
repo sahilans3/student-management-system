@@ -21,9 +21,7 @@ jobs:
         working-directory: Backend
         run: npm ci
 
-      - name: Install frontend dependencies
-        working-directory: UI
-        run: npm ci
+
 
       - name: Lint backend
         working-directory: Backend
