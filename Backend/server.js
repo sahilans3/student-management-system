@@ -2,7 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 import employeeRoutes from "./routes/employeeRoutes.js";
-import Employee from "./models/employee.js";
+
 
 dotenv.config();
 
