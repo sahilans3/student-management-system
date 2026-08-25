@@ -1,6 +1,7 @@
 import { loginUser } from "../services/authService.js";
 import { generateToken } from "../utils/generateToken.js";
 
+// Login user
 export const loginController = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -45,4 +46,15 @@ export const loginController = async (req, res) => {
       message: error.message || "Invalid email or password",
     });
   }
+};
+
+// Get currently authenticated user
+export const getCurrentUser = async (req, res) => {
+  return res.status(200).json({
+    success: true,
+    message: "User fetched successfully",
+    data: {
+      user: req.user,
+    },
+  });
 };
