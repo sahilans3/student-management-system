@@ -1,10 +1,11 @@
 import { loginUser } from "../services/authService.js";
+import { generateToken } from "../utils/generateToken.js";
 
 export const loginController = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Validate login fields
+    // Check required login fields
     if (!email || !password) {
       return res.status(400).json({
         success: false,
@@ -12,22 +13,26 @@ export const loginController = async (req, res) => {
       });
     }
 
-    // Authenticate the user
+    // Verify email and password
     const result = await loginUser({
       email,
       password,
     });
 
-    // Convert Mongoose user document to a normal object
+    // Generate JWT for the authenticated user
+    const token = generateToken(result.user._id);
+
+    // Convert Mongoose document to a normal object
     const userObject = result.user.toObject();
 
-    // Never send the password hash to the client
+    // Never send password or password hash to the client
     const { passwordHash, password: _, ...safeUser } = userObject;
 
     return res.status(200).json({
       success: true,
       message: "Login successful",
       data: {
+        token,
         user: safeUser,
         memberships: result.memberships,
       },
