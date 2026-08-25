@@ -50,3 +50,25 @@ export const createOrganizationController = async (req, res) => {
     });
   }
 };
+
+// Get organization details for an authorized member
+export const getOrganization = async (req, res) => {
+  try {
+    return res.status(200).json({
+      success: true,
+      message: "Organization access verified",
+      data: {
+        organizationId: req.membership.organizationId,
+        roles: req.membership.roles,
+        status: req.membership.status,
+      },
+    });
+  } catch (error) {
+    console.error("Get organization error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to get organization",
+    });
+  }
+};
