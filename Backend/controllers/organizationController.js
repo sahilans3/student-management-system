@@ -72,3 +72,25 @@ export const getOrganization = async (req, res) => {
     });
   }
 };
+
+// Get organization data for admin users
+export const getAdminOrganization = async (req, res) => {
+  try {
+    return res.status(200).json({
+      success: true,
+      message: "Admin access verified",
+      data: {
+        organizationId: req.membership.organizationId,
+        roles: req.membership.roles,
+        status: req.membership.status,
+      },
+    });
+  } catch (error) {
+    console.error("Admin organization error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to access admin organization data",
+    });
+  }
+};
