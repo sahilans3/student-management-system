@@ -7,6 +7,11 @@ export const loginUser = async ({ email, password }) => {
   // Find the user by email
   const user = await User.findOne({ email });
 
+  // Check if the user account is active
+if (user.status !== "active") {
+  throw new Error("Account is inactive");
+}
+
   if (!user) {
     throw new Error("Invalid email or password");
   }

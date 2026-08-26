@@ -94,3 +94,139 @@ export const createTeacher = async ({
     await session.endSession();
   }
 };
+
+// Get all teachers from an organization
+export const getTeachers = async (organizationId) => {
+    const teachers = await TeacherProfile.find({
+      organizationId,
+    })
+      .populate("userId", "name email phone status")
+      .sort({ createdAt: -1 });
+  
+    return teachers;
+  };
+
+// Get a single teacher from the organization
+export const getTeacher = async ({
+    organizationId,
+    teacherId,
+  }) => {
+    const teacher = await TeacherProfile.findOne({
+      _id: teacherId,
+      organizationId,
+    }).populate("userId", "name email phone status");
+  
+    if (!teacher) {
+      throw new Error("Teacher not found");
+    }
+  
+    return teacher;
+  };
+
+// Update a teacher profile
+export const updateTeacher = async ({
+    organizationId,
+    teacherId,
+    updateData,
+  }) => {
+    const teacher = await TeacherProfile.findOneAndUpdate(
+      {
+        _id: teacherId,
+        organizationId,
+      },
+      {
+        $set: updateData,
+      },
+      {
+        new: true,
+        runValidators: true,
+      }
+    ).populate("userId", "name email phone status");
+  
+    if (!teacher) {
+      throw new Error("Teacher not found");
+    }
+  
+    return teacher;
+  };
+
+// Deactivate a teacher and remove their organization access
+export const deactivateTeacher = async ({
+    organizationId,
+    teacherId,
+    leavingDate,
+  }) => {
+    const session = await mongoose.startSession();
+  
+    try {
+      session.startTransaction();
+  
+      // Find teacher in this organization
+      const teacher = await TeacherProfile.findOne({
+        _id: teacherId,
+        organizationId,
+      }).session(session);
+  
+      if (!teacher) {
+        throw new Error("Teacher not found");
+      }
+  
+      if (teacher.status === "inactive") {
+        throw new Error("Teacher is already inactive");
+      }
+  
+      // Mark teacher profile as inactive
+      teacher.status = "inactive";
+      teacher.leavingDate = leavingDate || new Date();
+  
+      await teacher.save({ session });
+  
+      // Remove teacher's access from this organization
+      const membership = await OrganizationMembership.findOneAndUpdate(
+        {
+          userId: teacher.userId,
+          organizationId,
+          roles: "teacher",
+          status: "active",
+        },
+        {
+          $set: {
+            status: "removed",
+          },
+        },
+        {
+          new: true,
+          session,
+        }
+      );
+  
+      if (!membership) {
+        throw new Error("Active teacher membership not found");
+      }
+  
+      // Disable the user account
+      await User.findByIdAndUpdate(
+        teacher.userId,
+        {
+          $set: {
+            status: "inactive",
+          },
+        },
+        {
+          session,
+        }
+      );
+  
+      await session.commitTransaction();
+  
+      return {
+        teacher,
+        membership,
+      };
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      await session.endSession();
+    }
+  };
