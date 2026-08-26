@@ -3,6 +3,7 @@ name: CI
 on:
   push:
   pull_request:
+  workflow_dispatch:
 
 jobs:
   test:
@@ -20,8 +21,6 @@ jobs:
       - name: Install backend dependencies
         working-directory: Backend
         run: npm ci
-
-
 
       - name: Lint backend
         working-directory: Backend
