@@ -1,5 +1,6 @@
 import { createOrganization } from "../services/organizationService.js";
 
+// Create a new organization with its owner
 export const createOrganizationController = async (req, res) => {
   try {
     const { organization, owner } = req.body;
@@ -26,18 +27,19 @@ export const createOrganizationController = async (req, res) => {
       ownerData: owner,
     });
 
-    // Convert Mongoose document to plain object
+    // Convert Mongoose document to a normal object
     const userObject = result.user.toObject();
 
-    // Remove sensitive fields
-    const { passwordHash, password, ...safeUser } = userObject;
+    // Never send password or password hash to the client
+    delete userObject.passwordHash;
+    delete userObject.password;
 
     return res.status(201).json({
       success: true,
       message: "Organization created successfully",
       data: {
         organization: result.organization,
-        user: safeUser,
+        user: userObject,
         membership: result.membership,
       },
     });

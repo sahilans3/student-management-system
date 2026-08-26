@@ -27,7 +27,10 @@ export const loginController = async (req, res) => {
     const userObject = result.user.toObject();
 
     // Never send password or password hash to the client
-    const { passwordHash, password: _, ...safeUser } = userObject;
+    delete userObject.passwordHash;
+    delete userObject.password;
+
+    const safeUser = userObject;
 
     return res.status(200).json({
       success: true,
